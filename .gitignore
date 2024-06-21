@@ -1,5 +1,6 @@
 !Build/
 .last_cover_stats
+/META.*
 /META.yml
 /META.json
 /MYMETA.*
@@ -9,6 +10,7 @@
 
 # Devel::Cover
 cover_db/
+.last_cover_stats
 
 # Devel::NYTProf
 nytprof.out
@@ -33,3 +35,6 @@ inc/
 /MANIFEST.bak
 /pm_to_blib
 /*.zip
+/inc/
+.lwpcookies
+pod2htm*.tmp
