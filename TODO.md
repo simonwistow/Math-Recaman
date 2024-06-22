@@ -6,7 +6,7 @@
 - [x] Add suggested improvement modules
 - [x] Use Set::IntSpan if available
 - [x] Push to GitHub
-- [ ] Generate SVG
-- [ ] Gradient CSS for SVG
+- [x] Generate SVG
+- [-] Gradient CSS for SVG
 - [ ] Output midi file
 - [ ] Release to CPAN

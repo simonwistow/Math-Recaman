@@ -6,14 +6,27 @@ use Math::Recaman qw(recaman);
 use Getopt::Long;
 use Pod::Usage;
 
+our $SVG;
+BEGIN {
+    eval {  require SVG };
+    unless ($@ ) {
+        SVG->import();
+        $SVG = 1;
+    } else {
+        $SVG = 0;
+    }
+}
+
 my $help = 0;
 my $man  = 0;
 my $mode;
+my $output;
 
 GetOptions(
   'help|?'     => \$help,
   'man'        => \$man,
   'mode|m=s'   => \$mode,
+  'output|o=s' => \$output,
 ) or pod2usage(2);
 
 pod2usage(1) if $help;
@@ -31,6 +44,8 @@ if (!defined $mode || lc($mode) eq 'default') {
   do_nth($target);
 } elsif (lc($mode) eq 'max') {
   do_max($target);
+} elsif (lc($mode) eq 'svg') {
+  do_svg($target, $output);
 } else {
   die "Unknown mode '$mode'\n";
 }
@@ -76,6 +91,93 @@ sub _nth {
   my $max  = 0;
   recaman($target, sub { $last = shift; $max = $last if $last>$max });
   return ($last, $max);
+}
+
+sub do_svg {
+  my $target = shift;
+  my $output = shift;
+  die "You must install the Perl module SVG from CPAN to use this feature\n" unless $SVG;
+
+  my $STRIDE = 15; # pixels between numbers
+
+  # Yes, technically this does the work twice
+  # ... but getting the 10 millionth number (it's 10,438,710 btw and the largest number seen is 61,998,984)
+  # takes 4s on my 2018 MacBook Pro and I don't suspect you're going to do an image that wide.
+  my ($last, $max_global) = _nth($target);
+
+  # Create Canvas
+  my $width = ($max_global+2)*$STRIDE;
+  my $height = $width/2; # TODO probably a better way to work this out
+  my $svg = SVG->new(width => $width, height => $height);
+
+  # Draw main line
+  $svg->line(
+      id => 'mainline',
+      x1 => $STRIDE,
+      y1 => $height/2,
+      x2 => $width-$STRIDE,
+      y2 => $height/2,
+      stroke => 'black',
+      fill   => 'none',
+      'stroke-width' => 2,
+  );
+
+  # Draw '$target' number of circles
+  $svg->circle(
+      id => "circle_$_",
+      cx => ($_+1)*$STRIDE,
+      cy => $height/2,
+      r  => 2
+  ) for (0..$max_global);
+
+  # Draw the arcs
+  my $prev = 0;
+  recaman($target, sub {
+    my $num     = shift;
+    my $count   = shift;
+    my $max_cur = shift;
+
+    my $low     = ($prev, $num)[$prev > $num];
+    my $high    = ($prev, $num)[$prev < $num];
+    my $start   = ($low+1)*$STRIDE;
+    my $end     = ($high+1)*$STRIDE;
+    my $dist    = $end-$start;
+    my $radius  = ($dist/2);
+    my $mid     = $start+$radius;
+    my $y       = $height/2;
+    # TODO there's a better, more aesthetic algorithm for this
+    # The illustrations on the wikipedia article are much nicer
+    my $over    = $num>=$max_cur;
+    my $top     = ($over) ? $y-$radius : $y+$radius;
+    # Draw an arc
+    my $path = "M $start,$y C $start $y, $mid $top, $end $y";
+    $svg->path(
+        id      => "arc_$count",
+        d       => $path,
+        # TODO this should be nicer and also more configurable
+        stroke  => ($prev>$num) ? 'black' : 'blue',
+        fill    => 'none',
+    );
+    # TODO how do we choose to go above or below?
+    $prev = $num;
+  });
+
+  # Print out the SVG
+  _dump($svg->xmlify, $output);
+}
+
+sub _dump {
+  my $data  = shift;
+  my $ouput = shift;
+  if ($output) {
+    open(my $fh, '>', $output) || die "Couldn't open output file $output: $!\n";
+    binmode($fh);
+    print $fh, $data;
+    close($fh);
+  } else {
+    binmode(STDOUT);
+    print $data;
+  }
 }
 
 =encoding utf8
