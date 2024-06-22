@@ -75,7 +75,7 @@ Takes a target number to calculate to. If nothing is given the method returns im
 By default it prints each number out on a new line.
 
 You can optionally pass in a anonymous subroutine which will be called for each new number in the sequence
-with the arguments C<number> and C<count>.
+with the arguments C<number>, C<count> and C<max seen so far>.
 
 If you do not pass an anonymous subroutine and if you call this subroutine expecting an array in return then nothing will be printed.
 
@@ -99,13 +99,15 @@ sub recaman {
 
   my $num = 1;
   my $pointer = 0;
+  my $max = 0;
   while ($num<=$target) {
     $increment->($pointer);
-    $callback->($pointer, $num) if defined $callback;
+    $callback->($pointer, $num, $max) if defined $callback;
     my $next = $pointer - $num;
     $next = $pointer+$num if $next<0 || $present->($next);
     $pointer = $next;
     $num++;
+    $max = $pointer if $pointer>$max;
   }
   return @values;
 }
