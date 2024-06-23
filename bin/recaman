@@ -167,12 +167,12 @@ sub do_svg {
 }
 
 sub _dump {
-  my $data  = shift;
-  my $ouput = shift;
+  my $data   = shift;
+  my $output = shift;
   if ($output) {
     open(my $fh, '>', $output) || die "Couldn't open output file $output: $!\n";
     binmode($fh);
-    print $fh, $data;
+    print $fh $data;
     close($fh);
   } else {
     binmode(STDOUT);
