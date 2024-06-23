@@ -41,3 +41,4 @@ pod2htm*.tmp
 
 # Testing
 *.svg
+*.midi

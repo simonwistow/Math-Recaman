@@ -30,7 +30,8 @@ my %WriteMakefileArgs = (
                 suggests => {
                     'Set::IntSpan' => 1.0,
                     'SVG' => 1.0,
-                    'MIDI' => 1.0,
+                    'MIDI::Simple' => 1.0,
+                    'IO::String' => 1.0,
                 },
             },
         },
