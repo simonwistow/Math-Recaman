@@ -28,10 +28,10 @@ my %WriteMakefileArgs = (
         prereqs     => {
             runtime   => {
                 suggests => {
-                    'Set::IntSpan' => 1.0,
-                    'SVG' => 1.0,
-                    'MIDI::Simple' => 1.0,
-                    'IO::String' => 1.0,
+                    'Set::IntSpan' => '1.0',
+                    'SVG' => '2.60',
+                    'MIDI::Simple' => '0.80',
+                    'IO::String' => '1.03',
                 },
             },
         },
