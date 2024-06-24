@@ -8,7 +8,7 @@ use Exporter qw/import/;
 
 our $VERSION = '1.0';
 our $USING_INTSPAN;
-our @EXPORT_OK=qw(recaman);
+our @EXPORT_OK=qw(recaman recaman_a008336);
 
 BEGIN {
     eval {  require Set::IntSpan };
@@ -97,9 +97,9 @@ sub recaman {
     $present   = sub { $set->member($_[0]) };
   }
 
-  my $num = 1;
+  my $num     = 1;
   my $pointer = 0;
-  my $max = 0;
+  my $max     = 0;
   while ($num<=$target) {
     $increment->($pointer);
     $callback->($pointer, $num, $max) if defined $callback;
@@ -110,6 +110,51 @@ sub recaman {
     $max = $pointer if $pointer>$max;
   }
   return @values;
+}
+
+=head2 recaman_a008336 <target> [callback]
+
+There is another sequence invented by Recamán, less known, defined as:
+
+  a₁   = 1
+  aₙ₊₁ = aₙ/n  if n divides aₙ
+  aₙ₊₁ = naₙ   otherwise
+
+Takes a target number to calculate to. If nothing is given the method returns immediately.
+
+By default it prints each number out on a new line.
+
+You can optionally pass in a anonymous subroutine which will be called for each new number in the sequence
+with the arguments C<number>, C<count> and C<max seen so far>.
+
+If you do not pass an anonymous subroutine and if you call this subroutine expecting an array in return then nothing will be printed.
+
+=cut
+sub recaman_a008336 {
+    my @values;
+
+    my $target   = shift || return 0;
+    my $callback = shift || (wantarray ? sub { push @values, shift } : sub { print $_[0]."\n" });
+
+    return 0 if $target<1;
+
+    my $num     = 0;
+    my $pointer = 0;
+    my $max     = 0;
+    while ($num<$target) {
+        if ($num < 2) {
+            $pointer = 1;
+        } elsif (($pointer%$num)==0) {
+            $pointer = $pointer/$num;
+        } else {
+            $pointer = $pointer*$num;
+        }
+        # print "$num) $pointer\n";
+        $callback->($pointer, $num, $max);
+        $num++;
+        $max = $pointer if $pointer>$max;
+    }
+    return @values;
 }
 
 =head1 Using Set::IntSpan

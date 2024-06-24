@@ -2,7 +2,7 @@
 
 use warnings;
 use strict;
-use Math::Recaman qw(recaman);
+use Math::Recaman qw(recaman recaman_a008336);
 use Getopt::Long;
 use Pod::Usage;
 
@@ -30,14 +30,31 @@ BEGIN {
 
 my $help = 0;
 my $man  = 0;
+my $alt  = 0;
 my $mode;
 my $output;
+
+my @reg_checks = (0, 1, 3, 6, 2, 7, 13, 20, 12, 21,
+                 11, 22, 10, 23, 9, 24, 8, 25, 43,
+                 62, 42, 63, 41, 18, 42, 17, 43, 16,
+                 44, 15, 45, 14, 46, 79, 113, 78, 114,
+                 77, 39, 78, 38, 79, 37, 80, 36, 81,
+                 35, 82, 34, 83, 33, 84, 32, 85, 31,
+                 86, 30, 87, 29, 88, 28, 89, 27, 90,
+                 26, 91, 157, 224, 156, 225, 155);
+
+my @alt_checks = (1, 1, 2, 6, 24, 120, 20, 140, 1120, 10080, 1008, 11088, 924,
+                  12012, 858, 12870, 205920, 3500640, 194480, 3695120,
+                  184756, 3879876, 176358, 4056234, 97349616, 2433740400,
+                  93605400, 2527345800, 90262350, 2617608150, 87253605,
+                  2704861755, 86555576160, 2856334013280);
 
 GetOptions(
   'help|?'     => \$help,
   'man'        => \$man,
   'mode|m=s'   => \$mode,
   'output|o=s' => \$output,
+  'alt|a'      => \$alt,
 ) or pod2usage(2);
 
 pod2usage(1) if $help;
@@ -45,6 +62,7 @@ pod2usage(-exitval => 0, -verbose => 2) if $man;
 
 my $target = shift @ARGV || 71;
 
+my $func = ($alt) ? \&recaman_a008336 : \&recaman;
 if (!defined $mode || lc($mode) eq 'default') {
   do_default($target);
 } elsif (lc($mode) eq 'check') {
@@ -65,25 +83,20 @@ if (!defined $mode || lc($mode) eq 'default') {
 
 sub do_default {
   my $target = shift;
-  print join(", ", recaman($target))."\n";
+  print join(", ", $func->($target))."\n";
 }
 
+
+
 sub do_check {
-  do_default(71);
-  my @checks = (0, 1, 3, 6, 2, 7, 13, 20, 12, 21,
-                11, 22, 10, 23, 9, 24, 8, 25, 43,
-                62, 42, 63, 41, 18, 42, 17, 43, 16,
-                44, 15, 45, 14, 46, 79, 113, 78, 114,
-                77, 39, 78, 38, 79, 37, 80, 36, 81,
-                35, 82, 34, 83, 33, 84, 32, 85, 31,
-                86, 30, 87, 29, 88, 28, 89, 27, 90,
-                26, 91, 157, 224, 156, 225, 155);
+  do_default($alt ? 34 : 71);
+  my @checks = $alt ? @alt_checks : @reg_checks;
   print join(", ", @checks)."\n";
 }
 
 sub do_newline {
   my $target = shift;
-  recaman($target);
+  $func->($target);
 }
 
 sub do_nth {
@@ -102,7 +115,7 @@ sub _nth {
   my $target = shift;
   my $last = 0;
   my $max  = 0;
-  recaman($target, sub { $last = shift; $max = $last if $last>$max });
+  $func->($target, sub { $last = shift; $max = $last if $last>$max });
   return ($last, $max);
 }
 
@@ -145,7 +158,7 @@ sub do_svg {
 
   # Draw the arcs
   my $prev = 0;
-  recaman($target, sub {
+  $func->($target, sub {
     my $num     = shift;
     my $count   = shift;
     my $max_cur = shift;
@@ -195,7 +208,7 @@ sub do_midi {
   $midi->text_event("Representation of Recamán's sequence for the first $target notes");
   #$midi->noop("c1 f, o5");
   # Set up the notes
-  recaman($target, sub {
+  $func->($target, sub {
     my $num   = shift;
     my $count = shift;
     # Add note as $num % 127
