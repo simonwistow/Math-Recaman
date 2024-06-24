@@ -10,6 +10,7 @@ t/01-sequence.t
 t/01-sequence-intspan.t
 t/01-sequence-common.pl
 t/02-wantarray.t
+t/03-sequence-a008336.t
 t/manifest.t
 t/pod-coverage.t
 t/pod.t
