@@ -7,13 +7,24 @@ use Getopt::Long;
 use Pod::Usage;
 
 our $SVG;
+our $MIDI;
 BEGIN {
-    eval {  require SVG };
+    eval { require SVG };
     unless ($@ ) {
         SVG->import();
         $SVG = 1;
     } else {
         $SVG = 0;
+    }
+
+    eval {
+        require MIDI::Simple;
+        require IO::String;
+    };
+    unless ($@ ) {
+        MIDI::Simple->import();
+        IO::String->import();
+        $MIDI = 1;
     }
 }
 
@@ -46,6 +57,8 @@ if (!defined $mode || lc($mode) eq 'default') {
   do_max($target);
 } elsif (lc($mode) eq 'svg') {
   do_svg($target, $output);
+} elsif (lc($mode) eq 'midi') {
+  do_midi($target, $output);
 } else {
   die "Unknown mode '$mode'\n";
 }
@@ -164,6 +177,37 @@ sub do_svg {
 
   # Print out the SVG
   _dump($svg->xmlify, $output);
+}
+
+sub do_midi {
+  my $target = shift;
+  my $output = shift;
+  die "You must install the Perl modules MIDI::Simple and IO::String from CPAN to use this feature\n" unless $MIDI;
+
+  # Create the midi file
+  my $midi = MIDI::Simple->new_score();
+  # Set up
+  # The default tempo is 96
+  # Setting the tempo to 120 was interesting and matches what the oeis-to-midi script does
+  # https://github.com/synchronometry/OEIS-to-MIDI
+  # https://oeis.org/play?seq=A005132
+  # $midi->set_tempo(120);
+  $midi->text_event("Representation of Recamán's sequence for the first $target notes");
+  #$midi->noop("c1 f, o5");
+  # Set up the notes
+  recaman($target, sub {
+    my $num   = shift;
+    my $count = shift;
+    # Add note as $num % 127
+    $midi->n("n".($num%127));
+  });
+
+  # TODO don't love the reliance on IO::String
+  my $io = IO::String->new;
+  $midi->write_score($io);
+
+  # Print out the Midi file
+  _dump(${$io->string_ref}, $output);
 }
 
 sub _dump {

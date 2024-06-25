@@ -8,5 +8,5 @@
 - [x] Push to GitHub
 - [x] Generate SVG
 - [-] Gradient CSS for SVG
-- [ ] Output midi file
+- [x] Output midi file
 - [ ] Release to CPAN
