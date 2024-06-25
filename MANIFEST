@@ -16,3 +16,6 @@ t/pod-coverage.t
 t/pod.t
 xt/boilerplate.t
 TODO.md
+examples/recaman-100.svg
+examples/recaman-1000.svg
+examples/recaman-1000.midi
