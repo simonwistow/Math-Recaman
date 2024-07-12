@@ -25,6 +25,8 @@ BEGIN {
         MIDI::Simple->import();
         IO::String->import();
         $MIDI = 1;
+    } else {
+        $MIDI = 0;
     }
 }
 
