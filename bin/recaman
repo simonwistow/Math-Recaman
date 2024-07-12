@@ -124,16 +124,32 @@ sub do_svg {
   my $output = shift;
   die "You must install the Perl module SVG from CPAN to use this feature\n" unless $SVG;
 
-  my $STRIDE = 15; # pixels between numbers
+  my $STRIDE     = 15; # pixels between numbers
+  my $prev       = 0;
+  my $max_num    = 0;
+  my $max_radius = 0;
+  my @arcs;
+  $func->($target, sub {
+    my $num     = shift;
+    my $count   = shift;
 
-  # Yes, technically this does the work twice
-  # ... but getting the 10 millionth number (it's 10,438,710 btw and the largest number seen is 61,998,984)
-  # takes 4s on my 2018 MacBook Pro and I don't suspect you're going to do an image that wide.
-  my ($last, $max_global) = _nth($target);
+    my $low     = ($prev, $num)[$prev > $num];
+    my $high    = ($prev, $num)[$prev < $num];
+    my $start   = ($low+1)*$STRIDE;
+    my $end     = ($high+1)*$STRIDE;
+    my $dist    = $end-$start;
+    my $radius  = ($dist/2);
+
+    push @arcs, { num => $num, max_cur => $max_num, start => $start, end => $end, radius => $radius };
+
+    $max_num    = $num if $num>$max_num;
+    $max_radius = $radius if $radius>$max_radius;
+    $prev       = $num;
+  });
 
   # Create Canvas
-  my $width = ($max_global+2)*$STRIDE;
-  my $height = $width/2; # TODO probably a better way to work this out
+  my $width  = ($max_num+2)*$STRIDE;
+  my $height = ($max_radius+$STRIDE)*2;
   my $svg = SVG->new(width => $width, height => $height);
 
   # Draw main line
@@ -154,27 +170,22 @@ sub do_svg {
       cx => ($_+1)*$STRIDE,
       cy => $height/2,
       r  => 2
-  ) for (0..$max_global);
+  ) for (0..$max_num);
 
   # Draw the arcs
-  my $prev = 0;
-  $func->($target, sub {
-    my $num     = shift;
-    my $count   = shift;
-    my $max_cur = shift;
-
-    my $low     = ($prev, $num)[$prev > $num];
-    my $high    = ($prev, $num)[$prev < $num];
-    my $start   = ($low+1)*$STRIDE;
-    my $end     = ($high+1)*$STRIDE;
-    my $dist    = $end-$start;
-    my $radius  = ($dist/2);
-    my $mid     = $start+$radius;
+  my $count = 0;
+  foreach my $arc (@arcs) {
+    my $prev    = $arc->{max_cur};
+    my $num     = $arc->{num};
+    my $start   = $arc->{start};
+    my $end     = $arc->{end};
+    my $radius  = $arc->{radius};
     my $y       = $height/2;
     # TODO there's a better, more aesthetic algorithm for this
     # The illustrations on the wikipedia article are much nicer
-    my $over    = $num>=$max_cur;
+    my $over    = $num>=$prev;
     my $top     = ($over) ? $y-$radius : $y+$radius;
+    my $mid     = $start+$radius;
     # Draw an arc
     my $path = "M $start,$y C $start $y, $mid $top, $end $y";
     $svg->path(
@@ -184,10 +195,8 @@ sub do_svg {
         stroke  => ($prev>$num) ? 'black' : 'blue',
         fill    => 'none',
     );
-    # TODO how do we choose to go above or below?
-    $prev = $num;
-  });
-
+    $count++;
+  }
   # Print out the SVG
   _dump($svg->xmlify, $output);
 }
