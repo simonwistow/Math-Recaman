@@ -6,7 +6,7 @@ use warnings;
 
 use Exporter qw/import/;
 
-our $VERSION = '1.0';
+our $VERSION = '1.5';
 our $USING_INTSPAN;
 our @EXPORT_OK=qw(recaman recaman_a008336);
 
