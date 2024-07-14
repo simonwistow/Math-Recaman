@@ -415,6 +415,10 @@ See L<https://github.com/synchronometry/OEIS-to-MIDI> and L<https://oeis.org/pla
 
 Simon Wistow <simon@thegestalt.org>
 
+=head1 COPYRIGHT
+
+Copyright (C) Simon Wistow, 2024
+
 =cut
 
 __DATA__
