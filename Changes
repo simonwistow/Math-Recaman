@@ -1,5 +1,8 @@
 Revision history for Math-Recaman
 
+1.6    2024-07-12
+        Fix a bug if you don't pass any flags in.
+
 1.5    2024-07-13
         Fix the date of 1.0 in the Changes file.
         Work out the size of the SVG canvas properly.
