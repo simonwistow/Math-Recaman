@@ -7,7 +7,7 @@
 - [x] Use Set::IntSpan if available
 - [x] Push to GitHub
 - [x] Generate SVG
-- [-] Gradient CSS for SVG
+- [x] Gradient CSS for SVG
 - [x] Output midi file
 - [x] Support for alternative Recaman's sequence A008336
 - [ ] Use Math::BigInt for A008336 if available
