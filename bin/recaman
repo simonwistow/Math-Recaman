@@ -50,7 +50,7 @@ GetOptions(
 pod2usage(1) if $help;
 pod2usage(-exitval => 0, -verbose => 2) if $man;
 
-my %flags = map { split '=' } split(' ', $flags); # Split up key=value pairs
+my %flags = map { split '=' } split(' ', $flags || ""); # Split up key=value pairs
 my $target = shift @ARGV || 71;
 
 my $func = ($alt) ? \&recaman_a008336 : \&recaman;
