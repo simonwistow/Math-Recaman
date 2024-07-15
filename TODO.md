@@ -12,3 +12,8 @@
 - [x] Support for alternative Recaman's sequence A008336
 - [ ] Use Math::BigInt for A008336 if available
 - [x] Release to CPAN
+- [ ] More SVG options (background color etc etc)
+- [ ] Animate SVG so the sequence grows over time?
+- [ ] Ability to change the instrument for MIDI
+- [ ] Notes get louder in MIDI as the number gets larger?
+- [ ] At some point this could be a generic system for visualising and audiofying number sequences. Just need to pass in an iterator. Outputs could be plugins.
