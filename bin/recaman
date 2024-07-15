@@ -285,6 +285,8 @@ You can also change the C<mode> to output in different styles.
   recaman --mode nl 100
   recaman --mode nth 1000
   recaman --mode max 10000000
+  recaman --mode midi 2000
+  recaman --mode svg  60
 
 And use C<flags> to set various options
 
@@ -299,9 +301,12 @@ or
 =over 4
 
 =item --help
-=item --man
 
 Print out help and usage.
+
+=item --man
+
+Print out full man page of options.
 
 =item --mode | -m
 
@@ -317,7 +322,7 @@ Optional flags for different modes (see L</FLAGS> below).
 
 =item --alt | -a
 
-Whether to use the standard Recamán's sequence or the alternative A008336 version.
+Whether to use the standard Recamán's sequence or the alternative L<A008336|https://oeis.org/A008336> version.
 
 =back
 
@@ -355,13 +360,13 @@ Prints out the largest number seen when calculating the nth number.
 
 =item stride
 
-Distance between numbers n the number line.
+Distance between numbers on the number line.
 
 Default is C<15>.
 
 =item first-color
 
-The first color to use.
+The first color to use. Can be any HTML style hex color (e.g C<#ffd700>) or one of the standard L<SVG named colors|https://developer.mozilla.org/en-US/docs/Web/CSS/named-color>.
 
 Default is C<black>.
 
@@ -375,7 +380,7 @@ Default is C<blue>.
 
 If C<color-mode> is set to C<gradient> then the colors of the arcs will gradually fade from C<first-color> to C<second-color>.
 
-Default is C<choice> which switch between C<first-color> to C<second-color>.
+Default is C<alternate> which switch between C<first-color> to C<second-color>.
 
 =item stroke-width
 
@@ -385,7 +390,7 @@ Default is C<3>.
 
 =item side-choice
 
-Which side to draw arcs on.
+Which side to draw arcs on for each number.
 
 Default is C<mod> which alternates between top and bottom.
 
