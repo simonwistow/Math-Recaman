@@ -143,6 +143,7 @@ sub do_svg {
   my $width  = ($max_num+2)*$STRIDE;
   my $height = ($max_radius+$STRIDE)*2;
   my $svg = SVG->new(width => $width, height => $height);
+  $svg->comment("Generated using command line:", _generate_command_line());
 
   # Draw main line
   $svg->line(
@@ -216,6 +217,9 @@ sub do_midi {
   # https://oeis.org/play?seq=A005132
   $midi->set_tempo($flags{tempo}) if $flags{tempo};
   $midi->text_event("Representation of Recamán's sequence for the first $target notes");
+  $midi->text_event("Generated using command line:");
+  $midi->text_event(_generate_command_line());
+
   #$midi->noop("c1 f, o5");
   # Set up the notes
   $func->($target, sub {
@@ -260,6 +264,19 @@ sub _gradient_color {
   my $b = int($sb+(($eb-$sb)*$frac)+0.5);
 
   return sprintf("#%.2x%.2x%.2x", $r, $g, $b);
+}
+
+sub _generate_command_line {
+  my $line = "recaman";
+  # use single - instead of -- because -- can't be in SVG comments
+  $line .= " -mode $mode"     if $mode && $mode ne "default";
+  $line .= " -alt"            if $alt;
+  $line .= " -output $output" if defined $output;
+  while (my ($k,$v) = each %flags) {
+    $line .= " -flags $k=$v";
+  }
+  $line .= " $target";
+  return $line;
 }
 
 =encoding utf8
