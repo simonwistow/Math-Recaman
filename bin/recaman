@@ -36,21 +36,21 @@ my $man  = 0;
 my $alt  = 0;
 my $mode;
 my $output;
-my $flags;
+my @flags;
 
 GetOptions(
   'help|?'     => \$help,
   'man'        => \$man,
   'mode|m=s'   => \$mode,
   'output|o=s' => \$output,
-  'flags|f=s'  => \$flags,
+  'flags|f=s'  => \@flags,
   'alt|a'      => \$alt,
 ) or pod2usage(2);
 
 pod2usage(1) if $help;
 pod2usage(-exitval => 0, -verbose => 2) if $man;
 
-my %flags = map { split '=' } split(' ', $flags || ""); # Split up key=value pairs
+my %flags = map { split '=' } map { split ' ' } @flags; # Split up key=value pairs
 my $target = shift @ARGV || 71;
 
 my $func = ($alt) ? \&recaman_a008336 : \&recaman;
@@ -289,6 +289,10 @@ You can also change the C<mode> to output in different styles.
 And use C<flags> to set various options
 
   recaman --mode svg --flags "first-color=#0000ff second-color=gold stroke-width=10 stride=20 color-mode=gradient" 75
+
+or
+
+ recaman --mode svg --flags first-color=#0000ff --flags second-color=gold --flags stroke-width=10 --flags stride=20 --flags color-mode=gradient 75
 
 =head1 OPTIONS
 

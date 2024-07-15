@@ -1,5 +1,8 @@
 Revision history for Math-Recaman
 
+1.7    2024
+        Make it so you can pass flags in one by one
+
 1.6    2024-07-12
         Fix a bug if you don't pass any flags in.
 
