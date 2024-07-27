@@ -8,6 +8,7 @@ use Pod::Usage;
 
 our $SVG;
 our $MIDI;
+our $DRUMS;
 our %SVG_COLORS = map { split ' ' } <DATA>; # read standard SVG colors from the DATA section
 BEGIN {
     eval { require SVG };
@@ -28,6 +29,18 @@ BEGIN {
         $MIDI = 1;
     } else {
         $MIDI = 0;
+    }
+
+    eval {
+        require MIDI::Drummer::Tiny;
+        require IO::String;
+    };
+    unless ($@ ) {
+        MIDI::Drummer::Tiny->import();
+        IO::String->import();
+        $DRUMS = 1;
+    } else {
+        $DRUMS = 0;
     }
 }
 
@@ -206,6 +219,15 @@ sub do_midi {
   my $target = shift;
   my $output = shift;
   my %flags  = @_;
+
+  my $func = $flags{'midi-mode'} eq 'drums' ? \&_do_midi_drums : \&_do_midi_piano;
+  return $func->($target, $output, %flags);
+}
+
+sub _do_midi_piano {
+  my $target = shift;
+  my $output = shift;
+  my %flags  = @_;
   die "You must install the Perl modules MIDI::Simple and IO::String from CPAN to use this feature\n" unless $MIDI;
 
   # Create the midi file
@@ -232,6 +254,53 @@ sub do_midi {
   # TODO don't love the reliance on IO::String
   my $io = IO::String->new;
   $midi->write_score($io);
+
+  # Print out the Midi file
+  _dump(${$io->string_ref}, $output);
+}
+
+sub _do_midi_drums {
+  my $target = shift;
+  my $output = shift;
+  my %flags  = @_;
+  die "You must install the Perl modules MIDI::Drummer::Tiny and IO::String from CPAN to use this feature\n" unless $DRUMS;
+
+  # Create the midi file
+  my $midi = MIDI::Drummer::Tiny->new;
+  # Set up
+  # The default tempo is 96
+  # Setting the tempo to 120 was interesting and matches what the oeis-to-midi script does
+  # https://github.com/synchronometry/OEIS-to-MIDI
+  # https://oeis.org/play?seq=A005132
+  $midi->score->set_tempo($flags{tempo}) if $flags{tempo};
+  $midi->score->text_event("Representation of Recamán's sequence for the first $target notes");
+  $midi->score->text_event("Generated using command line:");
+  $midi->score->text_event(_generate_command_line());
+
+  #$midi->noop("c1 f, o5");
+  my $prev = 0;
+  # Set up the notes
+  $func->($target, sub {
+    my $num   = shift;
+    my $count = shift;
+    my $over  = $num>=$prev;
+
+    # Add note as $num % 127
+    # Then normalize between 30 & 127
+    my $note = int(($num%127)/127*(127-30))+30;
+    # TODO there's probably a better way of doing this which is more melodic.
+    # If I had any kind of
+    if ($flags{'side-choice'} eq 'accent' && !$over) {
+      $midi->accent_note($note, $midi->triplet_eighth, $midi->snare);
+    } else {
+      $midi->note('qn', $note);
+    }
+    $prev = $num;
+  });
+
+  # TODO don't love the reliance on IO::String
+  my $io = IO::String->new;
+  $midi->score->write_score($io);
 
   # Print out the Midi file
   _dump(${$io->string_ref}, $output);
@@ -434,6 +503,14 @@ Default is C<96>.
 C<120> is also interesting and matches what OEIS-to-Midi does.
 
 See L<https://github.com/synchronometry/OEIS-to-MIDI> and L<https://oeis.org/play?seq=A005132>.
+
+=item midi-mode
+
+Can be C<piano> or C<drums>. Default is drums.
+
+=item side-choice
+
+If C<midi-mode> is C<drums> and C<side-choice> is set to C<accent> then if the current number is less than the previous numner then play a snare drum as an accent note.
 
 =back
 
